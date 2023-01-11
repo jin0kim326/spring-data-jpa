@@ -1,27 +1,46 @@
 package study.datajpa.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Getter
-
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(of = {"id", "username", "age"})
 public class Member {
     @Id @GeneratedValue
+    @Column(name = "member_id")
     private Long id;
-    private String name;
+    private String username;
+    private int age;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
 
     // JPA는 프록시 기술을 사용할때 private으로 선언되어있으면 제한이생길수있음, 최대 protected로 보호
-    protected Member() {
-    }
+    // @NoArgsConstructor(access = AccessLevel.PROTECTED) 대체
+    //    protected Member() {
+    //    }
 
     public Member(String name) {
-        this.name = name;
+        this.username = name;
     }
 
-    public void changeUserName(String userName){
-        this.name = userName;
+    public Member(String username, int age, Team team) {
+        this.username = username;
+        this.age = age;
+        if (team != null) {
+            changeTeam(team);
+        }
+
+    }
+
+    public void changeTeam(Team team) {
+        this.team = team;
+        team.getMembers().add(this);
     }
 }
