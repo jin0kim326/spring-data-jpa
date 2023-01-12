@@ -5,11 +5,16 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.NamedQuery;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(of = {"id", "username", "age"})
+@NamedQuery(
+        name = "Member.findByUsername2",
+        query = "select m from Member m where m.username =:username"
+)
 public class Member {
     @Id @GeneratedValue
     @Column(name = "member_id")
