@@ -265,8 +265,45 @@ class MemberRepositoryTest {
         Member findMember = members.get(0);
         System.out.println(findMember);
 
-
         // then
         assertThat(result).isEqualTo(3);
     }
+
+    @Test
+    public void entityGraph() throws Exception {
+        Team teamA = new Team("FC Bar");
+        Team teamB = new Team("FC Real");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member m1 = new Member("member1", 10, teamA);
+        Member m2 = new Member("member2", 20, teamB);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        em.flush();
+        em.clear();
+
+        //when
+        // N+1
+        List<Member> members = memberRepository.findAll();
+        for (Member member : members) {
+            System.out.println("member = " + member.getUsername());
+            System.out.println("member.teamClass = " + member.getTeam().getClass());
+            System.out.println("member.team = " + member.getTeam().getName());
+        }
+
+        // 패치조인
+//        List<Member> fetchMembers = memberRepository.findMembersFetchJoin();
+//        for (Member fetchMember : fetchMembers) {
+//            System.out.println("fetchMember = " + fetchMember.getUsername());
+//            System.out.println("f etchMember.teamClass = " + fetchMember.getTeam().getClass());
+//            System.out.println("fetchMember.team = " + fetchMember.getTeam().getName());
+//        }
+
+        //
+
+
+    }
+
 }
