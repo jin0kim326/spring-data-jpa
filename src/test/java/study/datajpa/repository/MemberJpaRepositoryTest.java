@@ -88,6 +88,9 @@ class MemberJpaRepositoryTest {
         assertThat(findMember).isEqualTo(m1);
     }
 
+    /**
+     * 순수 JPA 페이징
+     */
     @Test
     public void paging() throws Exception {
         // given

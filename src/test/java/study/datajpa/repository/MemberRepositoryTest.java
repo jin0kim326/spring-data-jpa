@@ -3,6 +3,10 @@ package study.datajpa.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.dto.MemberDto;
@@ -167,7 +171,70 @@ class MemberRepositoryTest {
         // best : 디비를 조회하려는데 데이터가 있는지, 없는지 모른다 ? => optional 사용
         Optional<Member> aa1 = memberRepository.findOptionalByUsername("bb");
         System.out.println(aa1);
+    }
+
+    @Test
+    public void paging() throws Exception {
+        // given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        int age =10;
+        // ** 🔥 페이지의 인덱스는 0부터 시작
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        // when
+        Page<Member> page = memberRepository.findJoinByAge(age, pageRequest);
+
+        // 페이징 결과( Page<Member> )를 바로 API결과로 반환하면 안됨 : API결과에 엔티티를 노출시키지않기!
+        Page<MemberDto> toMap
+                = page.map(m -> new MemberDto(m.getId(), m.getUsername(), null));
+
+        // then
+        List<Member> content = page.getContent();
+        long totalElements = page.getTotalElements();
+
+        for (Member member : content) {
+            System.out.println(member);
+        }
+        System.out.println(totalElements);
+
+        assertThat(content.size()).isEqualTo(3);    //현재 페이지 데이터 수
+        assertThat(page.getTotalElements()).isEqualTo(5); // 총 데이터로우수
+        assertThat(page.getNumber()).isEqualTo(0);  // 현재 페이지
+        assertThat(page.getTotalPages()).isEqualTo(2); // 총 페이지
+        assertThat(page.isFirst()).isTrue();
+        assertThat(page.hasNext()).isTrue();
+    }
+
+    @Test
+    public void slice() throws Exception {
+        // given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        int age =10;
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));
+
+        // when
+        Slice<Member> page = memberRepository.findSliceByAge(age, pageRequest);
+
+        // then
+        List<Member> content = page.getContent();
+//        long totalElements = page.getTotalElements(); 슬라이스는 total카운트를 날리지않음
 
 
+        assertThat(content.size()).isEqualTo(3);    //현재 페이지 데이터 수
+//        assertThat(page.getTotalElements()).isEqualTo(5); // 총 데이터로우수
+        assertThat(page.getNumber()).isEqualTo(0);  // 현재 페이지
+//        assertThat(page.getTotalPages()).isEqualTo(2); // 총 페이지
+        assertThat(page.isFirst()).isTrue();
+        assertThat(page.hasNext()).isTrue();
     }
 }
