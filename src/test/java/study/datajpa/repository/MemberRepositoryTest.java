@@ -1,5 +1,7 @@
 package study.datajpa.repository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +26,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MemberRepositoryTest {
     @Autowired MemberRepository memberRepository;
     @Autowired TeamRepository teamRepository;
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     public void testMember() throws Exception {
@@ -236,5 +240,33 @@ class MemberRepositoryTest {
 //        assertThat(page.getTotalPages()).isEqualTo(2); // 총 페이지
         assertThat(page.isFirst()).isTrue();
         assertThat(page.hasNext()).isTrue();
+    }
+
+    @Test
+    public void bulkUpdateWithdDataJpa() throws Exception {
+        // given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 23));
+        memberRepository.save(new Member("member5", 35));
+
+        // when
+        int result = memberRepository.bulkAgePlus(20);
+
+        /**
+         * 🔥🔥🔥🔥🔥🔥🔥🔥
+         * 벌크연산 주의점 : JPA (영속성 컨텍스트를 무시하고 디비에 처리하기때문에,
+         * 다시 조회하면 업데이트 반영분이아니라 영속성컨텍스트에 남아있는 결과로 조회함
+         * => 해결법 : 벌크연산 후 [영속성 컨텍스트를 날려버린다]
+         *    - em.clear 혹은 @Modifying(clearAutomatically = true) 옵션
+         */
+        List<Member> members = memberRepository.findByUsername("member5");
+        Member findMember = members.get(0);
+        System.out.println(findMember);
+
+
+        // then
+        assertThat(result).isEqualTo(3);
     }
 }

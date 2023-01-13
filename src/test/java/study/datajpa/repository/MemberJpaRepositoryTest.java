@@ -13,7 +13,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 @Transactional
 @SpringBootTest
-@Rollback(value = false)
+@Rollback(false)
 class MemberJpaRepositoryTest {
     @Autowired MemberJpaRepository memberJpaRepository;
 
@@ -111,5 +111,21 @@ class MemberJpaRepositoryTest {
         // then
         assertThat(members.size()).isEqualTo(3);
         assertThat(totalCount).isEqualTo(5);
+    }
+
+    @Test
+    public void bulkUpdateWithPureJpa() throws Exception {
+        // given
+        memberJpaRepository.save(new Member("member1", 10));
+        memberJpaRepository.save(new Member("member2", 19));
+        memberJpaRepository.save(new Member("member3", 20));
+        memberJpaRepository.save(new Member("member4", 23));
+        memberJpaRepository.save(new Member("member5", 35));
+
+        // when
+        int result = memberJpaRepository.bulkAgePlus(20);
+
+        // then
+        assertThat(result).isEqualTo(3);
     }
 }
