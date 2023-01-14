@@ -302,8 +302,43 @@ class MemberRepositoryTest {
 //        }
 
         //
+    }
 
+    @Test
+    public void queryHint() throws Exception {
+        // given
+        Member member = new Member("member1", 10);
+        memberRepository.save(member);
 
+        em.flush();
+        em.clear();
+
+        // when 1
+//        Member findMember = memberRepository.findById(member.getId()).get();
+//        findMember.setUsername("member2");
+//        em.flush();
+        /**
+         * 변경감지로 데이터를 업데이트하기 위해서는 원본(변경되기전)을 가지고 있어야 한다.
+         * 100% 조회용이면 낭비
+         *
+         */
+
+        //when 2
+        // @QueryHint를 사용하면 업데이트 쿼리가 안나가도록 설정가능
+        Member findMember = memberRepository.findReadOnlyByUsername("member1");
+        findMember.setUsername("member2");
+        em.flush();
+    }
+    
+    @Test
+    public void lock() throws Exception {
+        // given
+        Member member = new Member("member1", 10);
+        memberRepository.save(member);
+        em.flush();
+        em.clear();
+
+        List<Member> member1 = memberRepository.findLockByUsername("member1");
     }
 
 }
