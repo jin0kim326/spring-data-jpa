@@ -19,6 +19,12 @@ spring:
 #        default_batch_fetch_size: 100
         ## 컬렉션을 조회할때 In 쿼리 최대개수
 
+  data:
+    web:
+      pageable:
+        default-page-size: 10
+        max-page-size: 200
+
 logging:
   level:
     org.hibernate.SQL: debug  #얘는 로그로 찍힘
